@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전기산업기사 학습 앱</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            svg: {
+                fontCache: 'global',
+                scale: 1.2
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.typesetPromise();
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="header-left">
+                <h1>⚡ 전기산업기사 필기</h1>
+            </div>
+            <div class="header-right">
+                <button id="themeToggle" class="btn-icon" title="다크/라이트 테마">🌙</button>
+                <button id="menuToggle" class="btn-icon" title="메뉴">≡</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 좌측: 과목 선택 및 목차 -->
+            <aside class="sidebar" id="sidebar">
+                <div class="subject-selector">
+                    <h3>과목</h3>
+                    <div id="subjectList" class="subject-list"></div>
+                </div>
+                <div class="slide-list">
+                    <h3>슬라이드</h3>
+                    <ul id="slideList" class="slides"></ul>
+                </div>
+            </aside>
+
+            <!-- 중앙: 슬라이드 뷰어 -->
+            <main class="viewer">
+                <div class="slide-container" id="slideContainer">
+                    <div class="slide" id="currentSlide">
+                        <!-- 슬라이드 내용이 여기에 동적으로 삽입됨 -->
+                    </div>
+                </div>
+
+                <!-- 슬라이드 컨트롤 -->
+                <div class="viewer-footer">
+                    <button id="prevBtn" class="btn-nav">← 이전</button>
+                    <span class="slide-counter">
+                        <span id="currentIndex">1</span> / <span id="totalSlides">1</span>
+                    </span>
+                    <button id="nextBtn" class="btn-nav">다음 →</button>
+                    <button id="quizBtn" class="btn-submit">📝 퀴즈</button>
+                </div>
+            </main>
+
+            <!-- 우측: 즐겨찾기, 메모, 진행도 -->
+            <aside class="right-panel" id="rightPanel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="notes">📝 메모</button>
+                    <button class="tab-btn" data-tab="bookmarks">⭐ 즐겨찾기</button>
+                    <button class="tab-btn" data-tab="progress">📊 진행도</button>
+                </div>
+
+                <div class="panel-content">
+                    <!-- 메모 탭 -->
+                    <div class="tab-pane active" id="notes">
+                        <textarea id="noteInput" class="note-input" placeholder="이 슬라이드에 메모를 입력하세요..."></textarea>
+                        <button id="saveNoteBtn" class="btn-save-note">💾 메모 저장</button>
+                        <div id="notesList" class="notes-list"></div>
+                    </div>
+
+                    <!-- 즐겨찾기 탭 -->
+                    <div class="tab-pane" id="bookmarks">
+                        <button id="addBookmarkBtn" class="btn-save-note">⭐ 즐겨찾기 추가</button>
+                        <ul id="bookmarksList" class="bookmarks-list"></ul>
+                    </div>
+
+                    <!-- 진행도 탭 -->
+                    <div class="tab-pane" id="progress">
+                        <div id="progressStats"></div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- 퀴즈 모달 -->
+    <div class="modal" id="quizModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeQuizBtn">&times;</button>
+            <h2>퀴즈</h2>
+            <div id="quizContainer"></div>
+        </div>
+    </div>
+
+    <!-- 이미지 확대 모달 -->
+    <div class="modal" id="imageModal" style="display: none;">
+        <div class="modal-image-content">
+            <button class="modal-close" id="closeImageBtn">&times;</button>
+            <img id="expandedImage" src="" alt="확대된 이미지">
+        </div>
+    </div>
+
+    <!-- 스크립트 로드 -->
+    <script src="data/slides.js"></script>
+    <script src="data/quizzes.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
