@@ -625,5 +625,204 @@ function setupEventListeners() {
     }
 }
 
+// 데이터 내보내기 - Excel
+function exportToExcel() {
+    const workbook = XLSX.utils.book_new();
+    
+    // Sheet 1: 학습 메모 (AI 처리에 최적화)
+    const notesData = [];
+    Object.entries(appState.notes).forEach(([slideId, notes]) => {
+        const [subIdx, slideIdx] = slideId.split('-').map(Number);
+        const subject = subjects[subIdx];
+        const slide = subject.slides[slideIdx];
+        
+        notes.forEach(note => {
+            notesData.push({
+                '과목': subject.subject,
+                '슬라이드번호': slideIdx + 1,
+                '슬라이드제목': slide.title,
+                '슬라이드개요': getSlideOverview(slide),
+                '메모내용': note.text,
+                '저장일시': note.timestamp
+            });
+        });
+    });
+    
+    // Sheet 2: 즐겨찾기
+    const bookmarksData = appState.bookmarks.map(slideId => {
+        const [subIdx, slideIdx] = slideId.split('-').map(Number);
+        const subject = subjects[subIdx];
+        const slide = subject.slides[slideIdx];
+        
+        return {
+            '과목': subject.subject,
+            '슬라이드번호': slideIdx + 1,
+            '슬라이드제목': slide.title,
+            '슬라이드개요': getSlideOverview(slide),
+            '즐겨찾기여부': '✓'
+        };
+    });
+    
+    // Sheet 3: 학습 통계
+    const statsData = subjects.map((subject, subIdx) => {
+        const subjectBookmarks = appState.bookmarks.filter(id => {
+            const [idx] = id.split('-').map(Number);
+            return idx === subIdx;
+        }).length;
+        
+        const subjectNotes = Object.entries(appState.notes).reduce((count, [slideId, notes]) => {
+            const [idx] = slideId.split('-').map(Number);
+            return idx === subIdx ? count + notes.length : count;
+        }, 0);
+        
+        const progress = subject.slides.length > 0 
+            ? ((subjectBookmarks + subjectNotes) / subject.slides.length * 100).toFixed(1)
+            : 0;
+        
+        return {
+            '과목': subject.subject,
+            '총슬라이드수': subject.slides.length,
+            '즐겨찾기': subjectBookmarks,
+            '메모수': subjectNotes,
+            '학습진도': progress + '%'
+        };
+    });
+    
+    // 시트 추가
+    if (notesData.length > 0) {
+        const wsNotes = XLSX.utils.json_to_sheet(notesData);
+        wsNotes['!cols'] = [
+            { wch: 12 },
+            { wch: 10 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 40 },
+            { wch: 20 }
+        ];
+        XLSX.utils.book_append_sheet(workbook, wsNotes, "학습메모");
+    }
+    
+    if (bookmarksData.length > 0) {
+        const wsBookmarks = XLSX.utils.json_to_sheet(bookmarksData);
+        wsBookmarks['!cols'] = [
+            { wch: 12 },
+            { wch: 10 },
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 10 }
+        ];
+        XLSX.utils.book_append_sheet(workbook, wsBookmarks, "즐겨찾기");
+    }
+    
+    const wsStats = XLSX.utils.json_to_sheet(statsData);
+    wsStats['!cols'] = [
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 }
+    ];
+    XLSX.utils.book_append_sheet(workbook, wsStats, "학습통계");
+    
+    // 파일 생성
+    const filename = `전기산업기사_학습데이터_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+}
+
+// 데이터 내보내기 - JSON (AI 활용에 최적)
+function exportToJSON() {
+    const exportData = {
+        exportDate: new Date().toLocaleString('ko-KR'),
+        studyInfo: {
+            totalSubjects: subjects.length,
+            totalSlides: subjects.reduce((sum, s) => sum + s.slides.length, 0),
+            totalBookmarks: appState.bookmarks.length,
+            totalNotes: Object.values(appState.notes).reduce((sum, notes) => sum + notes.length, 0)
+        },
+        notes: {},
+        bookmarks: [],
+        statistics: {}
+    };
+    
+    // 메모 데이터
+    Object.entries(appState.notes).forEach(([slideId, notes]) => {
+        const [subIdx, slideIdx] = slideId.split('-').map(Number);
+        const subject = subjects[subIdx];
+        const slide = subject.slides[slideIdx];
+        
+        exportData.notes[slideId] = {
+            subject: subject.subject,
+            slideNumber: slideIdx + 1,
+            slideTitle: slide.title,
+            slideOverview: getSlideOverview(slide),
+            slideContent: slide.content || '',
+            keywords: slide.keywords || [],
+            notes: notes.map(n => ({
+                text: n.text,
+                timestamp: n.timestamp
+            }))
+        };
+    });
+    
+    // 즐겨찾기 데이터
+    appState.bookmarks.forEach(slideId => {
+        const [subIdx, slideIdx] = slideId.split('-').map(Number);
+        const subject = subjects[subIdx];
+        const slide = subject.slides[slideIdx];
+        
+        exportData.bookmarks.push({
+            slideId: slideId,
+            subject: subject.subject,
+            slideNumber: slideIdx + 1,
+            slideTitle: slide.title,
+            slideOverview: getSlideOverview(slide),
+            slideContent: slide.content || '',
+            keywords: slide.keywords || []
+        });
+    });
+    
+    // 통계 데이터
+    subjects.forEach((subject, subIdx) => {
+        const subjectBookmarks = appState.bookmarks.filter(id => {
+            const [idx] = id.split('-').map(Number);
+            return idx === subIdx;
+        });
+        
+        const subjectNotes = Object.entries(appState.notes).filter(([slideId]) => {
+            const [idx] = slideId.split('-').map(Number);
+            return idx === subIdx;
+        });
+        
+        exportData.statistics[subject.subject] = {
+            totalSlides: subject.slides.length,
+            bookmarkedSlides: subjectBookmarks.length,
+            totalNotes: subjectNotes.reduce((sum, [, notes]) => sum + notes.length, 0),
+            progressPercentage: ((subjectBookmarks.length + subjectNotes.length) / subject.slides.length * 100).toFixed(1)
+        };
+    });
+    
+    // JSON 파일 다운로드
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `전기산업기사_학습데이터_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 슬라이드 개요 추출
+function getSlideOverview(slide) {
+    if (slide.content) {
+        // HTML 태그 제거 및 200자 제한
+        const text = slide.content.replace(/<[^>]*>/g, '').substring(0, 200);
+        return text + (text.length === 200 ? '...' : '');
+    }
+    return '';
+}
+
 // 앱 시작
 document.addEventListener('DOMContentLoaded', init);

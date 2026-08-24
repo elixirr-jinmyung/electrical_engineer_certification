@@ -26,6 +26,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -96,6 +97,11 @@
 
                     <!-- 진행도 탭 -->
                     <div class="tab-pane" id="progress">
+                        <div class="export-section" style="margin-bottom: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                            <h4 style="margin-top: 0;">📥 데이터 내보내기</h4>
+                            <button onclick="exportToExcel()" class="btn-save-note" style="width: 100%; margin-bottom: 0.5rem;">📊 Excel 다운로드</button>
+                            <button onclick="exportToJSON()" class="btn-save-note" style="width: 100%; background: var(--accent-secondary);">📄 JSON 다운로드</button>
+                        </div>
                         <div id="progressStats"></div>
                     </div>
                 </div>
