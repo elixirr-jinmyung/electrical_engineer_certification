@@ -1231,3 +1231,91 @@ body.dark-mode .explanation {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ===== 메뉴 스타일 ===== */
+.menu-button {
+    background: linear-gradient(135deg, rgba(0,102,255,0.1) 0%, rgba(0,212,255,0.08) 100%);
+    border: 1px solid rgba(0,102,255,0.2);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.menu-button:hover {
+    background: linear-gradient(135deg, rgba(0,102,255,0.2) 0%, rgba(0,212,255,0.15) 100%);
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+body.dark-mode .menu-button {
+    background: linear-gradient(135deg, rgba(0,212,255,0.1) 0%, rgba(0,102,255,0.08) 100%);
+    border-color: rgba(0,212,255,0.15);
+}
+
+body.dark-mode .menu-button:hover {
+    background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(0,102,255,0.15) 100%);
+    border-color: var(--accent-tertiary);
+    color: var(--accent-tertiary);
+}
+
+/* 단축키 표시 */
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+}
+
+.shortcut-item kbd {
+    background: var(--accent);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.shortcut-item span {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ===== 슬라이드 애니메이션 ===== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+.slide {
+    animation: slideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.slide.fade-out {
+    animation: slideOut 0.2s ease-out forwards;
+}

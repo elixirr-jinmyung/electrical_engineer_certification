@@ -107,87 +107,94 @@ function loadSlide(subjectIndex, slideIndex) {
     appState.currentSlideIndex = slideIndex;
     saveToStorage();
 
-    // 슬라이드 내용 렌더링
-    let html = `<h2>${slide.title}</h2>`;
+    // 애니메이션: 기존 슬라이드 페이드아웃
+    currentSlide.classList.add('fade-out');
+    
+    // 페이드아웃 애니메이션 완료 후 내용 변경
+    setTimeout(() => {
+        currentSlide.classList.remove('fade-out');
+        
+        // 슬라이드 내용 렌더링
+        let html = `<h2>${slide.title}</h2>`;
 
-    if (slide.content) {
-        html += `<div>${slide.content}</div>`;
-    }
+        if (slide.content) {
+            html += `<div>${slide.content}</div>`;
+        }
 
-    if (slide.formulas && slide.formulas.length > 0) {
-        html += '<h3>공식</h3>';
-        slide.formulas.forEach(formula => {
-            // MathJax 렌더링을 위해 $$ ... $$ 형식으로 감싸기
-            html += `<div class="formula">$$${formula}$$</div>`;
+        if (slide.formulas && slide.formulas.length > 0) {
+            html += '<h3>공식</h3>';
+            slide.formulas.forEach(formula => {
+                // MathJax 렌더링을 위해 $$ ... $$ 형식으로 감싸기
+                html += `<div class="formula">$$${formula}$$</div>`;
+            });
+        }
+
+        if (slide.keywords && slide.keywords.length > 0) {
+            html += '<div class="keywords"><strong>키워드:</strong><br>';
+            slide.keywords.forEach(keyword => {
+                html += `<span class="keyword-tag">${keyword}</span>`;
+            });
+            html += '</div>';
+        }
+
+        currentSlide.innerHTML = html;
+        currentIndexSpan.textContent = slideIndex + 1;
+
+        // 수식 렌더링 (MathJax) - 향상된 타입셋팅
+        if (window.MathJax) {
+            MathJax.typesetPromise([currentSlide]).then(() => {
+                // MathJax 렌더링 후 추가 스타일 적용
+                const formulas = currentSlide.querySelectorAll('.formula');
+                formulas.forEach(formula => {
+                    if (formula.querySelector('mjx-container')) {
+                        formula.style.display = 'flex';
+                        formula.style.justifyContent = 'center';
+                        formula.style.alignItems = 'center';
+                    }
+                });
+            }).catch(err => console.log('MathJax error:', err));
+        }
+
+        // UI 업데이트
+        renderSlideList();
+        updateNavigationButtons();
+        loadNoteForSlide();
+        updateBookmarkButton();
+
+        // 키워드 태그 클릭 이벤트
+        const keywordTags = currentSlide.querySelectorAll('.keyword-tag');
+        keywordTags.forEach(tag => {
+            tag.style.cursor = 'pointer';
+            tag.addEventListener('click', (e) => {
+                const keyword = tag.textContent;
+                searchByKeyword(keyword);
+            });
+            tag.addEventListener('mouseover', () => {
+                tag.style.opacity = '0.8';
+            });
+            tag.addEventListener('mouseout', () => {
+                tag.style.opacity = '1';
+            });
         });
-    }
 
-    if (slide.keywords && slide.keywords.length > 0) {
-        html += '<div class="keywords"><strong>키워드:</strong><br>';
-        slide.keywords.forEach(keyword => {
-            html += `<span class="keyword-tag">${keyword}</span>`;
-        });
-        html += '</div>';
-    }
-
-    currentSlide.innerHTML = html;
-    currentIndexSpan.textContent = slideIndex + 1;
-
-    // 수식 렌더링 (MathJax) - 향상된 타입셋팅
-    if (window.MathJax) {
-        MathJax.typesetPromise([currentSlide]).then(() => {
-            // MathJax 렌더링 후 추가 스타일 적용
-            const formulas = currentSlide.querySelectorAll('.formula');
-            formulas.forEach(formula => {
-                if (formula.querySelector('mjx-container')) {
-                    formula.style.display = 'flex';
-                    formula.style.justifyContent = 'center';
-                    formula.style.alignItems = 'center';
+        // 이미지 클릭 확대 기능
+        const images = currentSlide.querySelectorAll('img');
+        images.forEach(img => {
+            img.style.cursor = 'zoom-in';
+            img.addEventListener('click', (e) => {
+                if (img.src && img.alt) {
+                    const imageModal = document.getElementById('imageModal');
+                    const expandedImage = document.getElementById('expandedImage');
+                    const expandedImageCaption = document.getElementById('expandedImageCaption');
+                    expandedImage.src = img.src;
+                    expandedImage.alt = img.alt;
+                    expandedImageCaption.textContent = img.alt;
+                    imageModal.style.display = 'flex';
+                    imageModal.classList.add('show');
                 }
             });
-        }).catch(err => console.log('MathJax error:', err));
-    }
-
-    // UI 업데이트
-    renderSlideList();
-    updateNavigationButtons();
-    loadNoteForSlide();
-    updateBookmarkButton();
-    updateProgressStats();
-
-    // 키워드 태그 클릭 이벤트
-    const keywordTags = currentSlide.querySelectorAll('.keyword-tag');
-    keywordTags.forEach(tag => {
-        tag.style.cursor = 'pointer';
-        tag.addEventListener('click', (e) => {
-            const keyword = tag.textContent;
-            searchByKeyword(keyword);
         });
-        tag.addEventListener('mouseover', () => {
-            tag.style.opacity = '0.8';
-        });
-        tag.addEventListener('mouseout', () => {
-            tag.style.opacity = '1';
-        });
-    });
-
-    // 이미지 클릭 확대 기능
-    const images = currentSlide.querySelectorAll('img');
-    images.forEach(img => {
-        img.style.cursor = 'zoom-in';
-        img.addEventListener('click', (e) => {
-            if (img.src && img.alt) {
-                const imageModal = document.getElementById('imageModal');
-                const expandedImage = document.getElementById('expandedImage');
-                const expandedImageCaption = document.getElementById('expandedImageCaption');
-                expandedImage.src = img.src;
-                expandedImage.alt = img.alt;
-                expandedImageCaption.textContent = img.alt;
-                imageModal.style.display = 'flex';
-                imageModal.classList.add('show');
-            }
-        });
-    });
+    }, 200); // 페이드아웃 애니메이션 시간 (200ms)
 }
 
 // 키워드 검색 함수
@@ -622,6 +629,141 @@ function setupEventListeners() {
     // 테마 복구
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
+    }
+
+    // 메뉴 이벤트 리스너
+    const menuToggle = document.getElementById('menuToggle');
+    const menuModal = document.getElementById('menuModal');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const closeSubMenuBtn = document.getElementById('closeSubMenuBtn');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleMenuModal);
+    }
+
+    if (closeMenuBtn) {
+        closeMenuBtn.addEventListener('click', toggleMenuModal);
+    }
+
+    if (closeSubMenuBtn) {
+        closeSubMenuBtn.addEventListener('click', toggleMenuSubModal);
+    }
+
+    // 메뉴 모달 외부 클릭 시 닫기
+    if (menuModal) {
+        menuModal.addEventListener('click', (e) => {
+            if (e.target === menuModal) {
+                toggleMenuModal();
+            }
+        });
+    }
+
+    // 메뉴 서브 모달 외부 클릭 시 닫기
+    const menuSubModal = document.getElementById('menuSubModal');
+    if (menuSubModal) {
+        menuSubModal.addEventListener('click', (e) => {
+            if (e.target === menuSubModal) {
+                toggleMenuSubModal();
+            }
+        });
+    }
+
+}
+
+
+// ===== 메뉴 기능 =====
+
+// 메뉴 토글
+function toggleMenuModal() {
+    const menuModal = document.getElementById('menuModal');
+    menuModal.style.display = menuModal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// 메뉴 옵션 표시
+function showMenuOption(option) {
+    const subModal = document.getElementById('menuSubModal');
+    const subContent = document.getElementById('menuSubContent');
+    
+    if (option === 'export') {
+        subContent.innerHTML = `
+            <h3>📥 데이터 내보내기</h3>
+            <p style="color: var(--text-secondary); margin: 1rem 0;">저장된 메모와 즐겨찾기를 다운로드하세요.</p>
+            <div style="display: flex; gap: 0.8rem;">
+                <button onclick="exportToExcel(); toggleMenuSubModal();" class="btn-submit" style="flex: 1;">📊 Excel</button>
+                <button onclick="exportToJSON(); toggleMenuSubModal();" class="btn-submit" style="flex: 1; background: var(--accent-secondary);">📄 JSON</button>
+            </div>
+        `;
+    } else if (option === 'shortcuts') {
+        subContent.innerHTML = `
+            <h3>⌨️ 키보드 단축키</h3>
+            <div style="margin: 1.5rem 0;">
+                <div class="shortcut-item">
+                    <kbd>←</kbd> <span>이전 슬라이드</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>→</kbd> <span>다음 슬라이드</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>ESC</kbd> <span>모달 닫기</span>
+                </div>
+            </div>
+        `;
+    } else if (option === 'reset') {
+        subContent.innerHTML = `
+            <h3 style="color: var(--accent-secondary);">🗑️ 데이터 초기화</h3>
+            <p style="color: var(--text-secondary); margin: 1.5rem 0;">⚠️ 모든 메모, 즐겨찾기가 삭제됩니다. 되돌릴 수 없습니다.</p>
+            <div style="display: flex; gap: 0.8rem;">
+                <button onclick="confirmReset()" class="btn-submit" style="flex: 1; background: var(--accent-secondary);">확인</button>
+                <button onclick="toggleMenuSubModal()" class="btn-submit" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary);">취소</button>
+            </div>
+        `;
+    } else if (option === 'info') {
+        const totalSlides = subjects.reduce((sum, s) => sum + s.slides.length, 0);
+        const totalNotes = Object.values(appState.notes).reduce((sum, n) => sum + n.length, 0);
+        subContent.innerHTML = `
+            <h3>ℹ️ 앱 정보</h3>
+            <div style="margin: 1.5rem 0;">
+                <p><strong>⚡ 전기산업기사 필기</strong></p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                    전기산업기사 필기시험 대비 학습 앱입니다.<br>
+                    메모, 즐겨찾기, 퀴즈 등의 기능으로<br>
+                    효율적인 학습을 지원합니다.
+                </p>
+                <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.85rem;">v1.0 | © 2026</p>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <p style="font-size: 0.85rem; margin: 0.5rem 0;">
+                        <strong>과목:</strong> ${subjects.length}개<br>
+                        <strong>총 슬라이드:</strong> ${totalSlides}개<br>
+                        <strong>메모:</strong> ${totalNotes}개<br>
+                        <strong>즐겨찾기:</strong> ${appState.bookmarks.length}개
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+    
+    subModal.style.display = 'flex';
+}
+
+function toggleMenuSubModal() {
+    const subModal = document.getElementById('menuSubModal');
+    subModal.style.display = 'none';
+}
+
+function confirmReset() {
+    if (confirm('정말 모든 데이터를 삭제하시겠습니까?')) {
+        appState = {
+            currentSubjectIndex: 0,
+            currentSlideIndex: 0,
+            bookmarks: [],
+            notes: {},
+            quizResults: {}
+        };
+        localStorage.removeItem('electricalAppState');
+        toggleMenuSubModal();
+        toggleMenuModal();
+        alert('데이터가 초기화되었습니다.');
+        location.reload();
     }
 }
 

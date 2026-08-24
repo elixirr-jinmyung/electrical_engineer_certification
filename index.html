@@ -73,12 +73,11 @@
                 </div>
             </main>
 
-            <!-- 우측: 즐겨찾기, 메모, 진행도 -->
+            <!-- 우측: 메모, 즐겨찾기 -->
             <aside class="right-panel" id="rightPanel">
                 <div class="panel-tabs">
                     <button class="tab-btn active" data-tab="notes">📝 메모</button>
                     <button class="tab-btn" data-tab="bookmarks">⭐ 즐겨찾기</button>
-                    <button class="tab-btn" data-tab="progress">📊 진행도</button>
                 </div>
 
                 <div class="panel-content">
@@ -93,16 +92,6 @@
                     <div class="tab-pane" id="bookmarks">
                         <button id="addBookmarkBtn" class="btn-save-note">⭐ 즐겨찾기 추가</button>
                         <ul id="bookmarksList" class="bookmarks-list"></ul>
-                    </div>
-
-                    <!-- 진행도 탭 -->
-                    <div class="tab-pane" id="progress">
-                        <div class="export-section" style="margin-bottom: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
-                            <h4 style="margin-top: 0;">📥 데이터 내보내기</h4>
-                            <button onclick="exportToExcel()" class="btn-save-note" style="width: 100%; margin-bottom: 0.5rem;">📊 Excel 다운로드</button>
-                            <button onclick="exportToJSON()" class="btn-save-note" style="width: 100%; background: var(--accent-secondary);">📄 JSON 다운로드</button>
-                        </div>
-                        <div id="progressStats"></div>
                     </div>
                 </div>
             </aside>
@@ -124,6 +113,29 @@
             <button class="modal-close" id="closeImageBtn">&times;</button>
             <img id="expandedImage" src="" alt="확대된 이미지">
             <div id="expandedImageCaption" class="image-caption"></div>
+        </div>
+    </div>
+
+    <!-- 메뉴 모달 -->
+    <div class="modal" id="menuModal" style="display: none;">
+        <div class="modal-content" style="max-width: 350px;">
+            <button class="modal-close" id="closeMenuBtn">&times;</button>
+            <h2 style="margin-bottom: 1.5rem;">⚙️ 메뉴</h2>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <button onclick="showMenuOption('export')" class="menu-button">📥 데이터 내보내기</button>
+                <button onclick="showMenuOption('shortcuts')" class="menu-button">⌨️ 키보드 단축키</button>
+                <button onclick="showMenuOption('info')" class="menu-button">ℹ️ 앱 정보</button>
+                <button onclick="showMenuOption('reset')" class="menu-button" style="color: var(--accent-secondary);">🗑️ 데이터 초기화</button>
+                <button onclick="toggleMenuModal()" class="menu-button" style="background: var(--bg-secondary); margin-top: 0.5rem;">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메뉴 서브 모달 -->
+    <div class="modal" id="menuSubModal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" id="closeSubMenuBtn">&times;</button>
+            <div id="menuSubContent"></div>
         </div>
     </div>
 
