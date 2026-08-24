@@ -174,12 +174,15 @@ function loadSlide(subjectIndex, slideIndex) {
     // 이미지 클릭 확대 기능
     const images = currentSlide.querySelectorAll('img');
     images.forEach(img => {
+        img.style.cursor = 'zoom-in';
         img.addEventListener('click', (e) => {
             if (img.src && img.alt) {
                 const imageModal = document.getElementById('imageModal');
                 const expandedImage = document.getElementById('expandedImage');
+                const expandedImageCaption = document.getElementById('expandedImageCaption');
                 expandedImage.src = img.src;
                 expandedImage.alt = img.alt;
+                expandedImageCaption.textContent = img.alt;
                 imageModal.style.display = 'flex';
                 imageModal.classList.add('show');
             }
